@@ -75,12 +75,17 @@ for frame = 1:numOfFrames
     frameTime = 1:length(currentFrame);
     for alpha = 1:5
         warpTime = ceil(phi_inv(alpha,frameTime));
-        warpFrame(alpha,:) = currentFrame(warpTime);
+        warpFrame(alpha,:) = fft(currentFrame(warpTime));
+        fanchirp(alpha,:,frame) = log(abs(warpFrame(alpha,:)));
     end
-    fanchirp(alpha,:,frame) = warpFrame(alpha,:);
+    
 end
 
-
+for n = 1:5
+    figure(n);
+    imagesc(squeeze(fanchirp(n,:,:))), colorbar;
+    title(n);
+end
 %             
 % 
 % % Matrix multiplication
