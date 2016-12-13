@@ -19,7 +19,7 @@ for i = 3:20
     alpha_vec = dtempo_dt ./ tempo_vec(2:end); %
     
     figure(3)
-    %plot(time_vec(2:end),dtempo_dt)
+    plot(time_vec(2:end),dtempo_dt)
     plot(alpha_vec)
     
     
