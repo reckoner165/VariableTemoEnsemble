@@ -17,15 +17,21 @@ plt = 0; % debugging option
 % n_t_sf_smoothed = n_t_sf_smoothed ./ (max(abs(n_t_sf_smoothed))); % normalize
 
 %% Short term analysis on n_t_sf
+% parameters:
+alpha_vec = -0.3:0.02:0.3;
+f_basis = (30:0.5:250)' / 60; % in hertz, basis frequencies. Can be optimized.
+
+% buffering
 win_dur = 3; % in sec
 n_win_size = round(win_dur * fs_sf);
 n_hop_size = round(n_win_size / 2);
 [windowed_n_mat, t_mat, frame_rate]  = frame(n_t_sf, t_sf ,fs_sf, n_win_size, n_hop_size);
 
+
+% main loop
 gamma_mat = zeros(size(windowed_n_mat));
 for col = 1:size(t_mat,2)-1
-    alpha_vec = -0.9:0.1:3;
-    f_basis = (30:600)' / 60; % in hertz, basis frequencies. Can be optimized.
+    
     best_kernel_mat = zeros(length(alpha_vec), size(t_mat, 1));
     tempo_plane = zeros(length(alpha_vec), length(f_basis));
     
