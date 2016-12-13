@@ -1,3 +1,5 @@
+clear all;
+
 win_size = 1024;
 hop_size = 512;
 plt = 0; % debugging option
@@ -41,6 +43,7 @@ for col = 1:size(t_mat,2)-1
         best_kernel_recovered = interp1(t_warped, best_kernel_warped, t_sec, 'spline');
         best_kernel_mat(i, :) = best_kernel_recovered;
     end
+<<<<<<< HEAD
     figure(1)
     imagesc(tempo_plane);
     figure(2)
@@ -48,7 +51,42 @@ for col = 1:size(t_mat,2)-1
     disp(col);
     %% get the index of the max element in tempo_plane, in terms of alpha and f.
     pause();
+=======
+%     imagesc(tempo_plane);
+%     disp(col);
+%     pause(0.05);
+    
+%     Find best kernel by getting global maximum and indices from
+%     tempo_plane 
+    [maxT,ind] = max(tempo_plane(:));
+    [m(col),n(col)] = ind2sub(size(tempo_plane),ind);
+    
 end
+% Offset frequency to minimum value
+n = n+30;
+
+% Reconstruct kernel basis functions and unwarp them
+for frame = 1:length(m)
+    alpha = m(frame);
+    freq = n(frame);
+    basis = sin(2*pi*(1:n_win_size)*freq/fs_sf);
+%     Multiplying with a window
+    basis = basis.*hamming(length(basis))'; 
+    t_sec = t_mat(:,frame);
+    t_warped = warp(t_sec, fs_sf, alpha*f_rate);
+%     Creating a matrix of best basis function for each onset frame
+    gamma_matrix(frame,:) = interp1(t_warped, basis, t_sec, 'spline');
+
+>>>>>>> 2ef282d52d837997496f1d31f1ad95c103533962
+end
+
+% Debug
+imagesc(gamma_matrix);
+
+% TO-DO:
+% String all the rows from gamma_matrix using overlap add
+% and obtain gamma_vector
+    
 
 
 
