@@ -8,7 +8,7 @@ function [ X_t, best_kernel ] = plp( x_t, fs )
 %   best_kernel: 1* t vector
 %       that is a windowed sine wave that's the best representation of the perioditcity.
 
-
+debug = 0;
 % %% PLP
 % fs_sf = 85;
 % t = (1:258)/fs_sf;
@@ -36,5 +36,10 @@ best_kernel = cos(2*pi*(w*n_t - best_phase)); % according to paper
 window = hann(length(best_kernel));
 best_kernel = window .* best_kernel';
 
+if debug == 1
+    figure(4)
+    plot(best_kernel);
+    pause(0.01);
+end
 end
 

@@ -41,9 +41,13 @@ for col = 1:size(t_mat,2)-1
         best_kernel_recovered = interp1(t_warped, best_kernel_warped, t_sec, 'spline');
         best_kernel_mat(i, :) = best_kernel_recovered;
     end
+    figure(1)
     imagesc(tempo_plane);
+    figure(2)
+    imagesc(best_kernel_mat);
     disp(col);
-    pause(0.05);
+    %% get the index of the max element in tempo_plane, in terms of alpha and f.
+    pause();
 end
 
 
