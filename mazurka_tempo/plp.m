@@ -1,7 +1,8 @@
-function [ X_t, best_kernel ] = plp( x_t, fs )
+function [ X_t, best_kernel ] = plp( x_t, fs, f )
 %function [ X_t, best_k ] = plp( x_t, fs )
 %   x_t: a input signal: 1 * t vec
 %   fs: the sampling freq of x_t
+%   f: the frequency of basis functions: 1 * n
 %   -----OUTPUT-----
 %   X_t: the frequency representation (using f as basis functions)
 %       size: 1 * t
@@ -17,7 +18,6 @@ debug = 0;
 
 %% get info
 n_win_size = length(x_t);
-f = (30:600)' / 60; % in hertz, basis frequencies. Can be parametized.
 n_t = (1:n_win_size) / fs;
 
 analysis_mat = exp(-2*pi*1i*(f * n_t));
