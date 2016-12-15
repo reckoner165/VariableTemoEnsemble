@@ -2,7 +2,7 @@ clear all;
 
 win_size = 1024;
 hop_size = 512;
-plt = 0; % debugging option
+plt = 1; % debugging option
 
 [x_t, fs, t] = import_audio('./17_4_zbinden.wav');
 
@@ -18,7 +18,7 @@ plt = 0; % debugging option
 
 %% Short term analysis on n_t_sf
 % parameters:
-alpha_vec = -0.3:0.02:0.3;
+alpha_vec = -0.99:0.1:3;
 f_basis = (30:0.5:250)' / 60; % in hertz, basis frequencies. Can be optimized.
 
 % buffering
@@ -39,12 +39,6 @@ for col = 1:size(t_mat,2)-1
         alpha = alpha_vec(i) / win_dur; % make sure negative tempo dont exist
         t_sec = t_mat(:,col);
         t_warped = warp(t_sec, fs_sf, alpha);
-        if plt == 1 % debugging option
-            figure(1)
-            plot(t_warped);
-            disp(alpha);
-            pause(0.1);
-        end
         n_sf_frame = windowed_n_mat(:,col);
         n_warped = interp1(t_sec, n_sf_frame, t_warped, 'spline');
         [N_warped, best_kernel_warped] = plp(n_warped, fs_sf, f_basis);
@@ -60,12 +54,12 @@ for col = 1:size(t_mat,2)-1
     if plt == 1 % debug option
         figure(2)
         imagesc(tempo_plane);
-        figure(3)
-        imagesc(best_kernel_mat);
+%         figure(3)
+%         imagesc(best_kernel_mat);
         disp(col);
         pause(0.05);
     end
-     % pick the best alpha
+    % pick the best alpha
     alpha_score = sum(tempo_plane,2);
     [best_alpha, best_a_idx] = max(alpha_score);
     % collect the best overall ker
@@ -77,7 +71,12 @@ end
 gamma_t = unframe(gamma_mat, n_hop_size);
 
 %%
+figure(1)
 plot(gamma_t);
+hold on;
+plot(n_t_sf);
+hold off;
+
 
 
 
