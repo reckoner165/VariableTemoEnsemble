@@ -5,8 +5,9 @@ win_size = 1024;
 hop_size = 512;
 
 [x_t, fs, t] = import_audio('./17_4_zbinden.wav');
-[n_t_sf , t_sf, fs_sf] = compute_novelty_sf(x_t, t, fs, win_size, hop_size);
-%[n_t_le, t_le, fs_le] = compute_novelty_le(x_t, t, fs, win_size, hop_size);
+%[n_t , t_nc, fs_nc] = compute_novelty_sf(x_t, t, fs, win_size, hop_size);
+%[n_t , t_nc, fs_nc] = compute_novelty_le(x_t, t, fs, win_size, hop_size);
+[n_t , t_nc, fs_nc] = create_novelty(x_t, t, fs, win_size, hop_size);
 
 %% smoothing using butterworth filter and normalize
 % w_c = 4;
@@ -25,7 +26,7 @@ f_basis = (44:1:144)' / 60; % in hertz, basis frequencies. Can be optimized.
 
 plt = 0;
 tic
-gamma_t = method1_wplp( n_t_sf, t_sf, fs_sf,win_dur, hop_per_window,alpha_vec, f_basis, plt);
+gamma_t = method1_wplp( n_t, t_nc, fs_nc,win_dur, hop_per_window,alpha_vec, f_basis, plt);
 toc
 
 %% Plotting...
