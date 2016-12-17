@@ -20,7 +20,8 @@ plt = 1; % debugging option
 % parameters:
 alpha_vec = -0.99:0.1:3;
 f_basis = (30:0.5:250)' / 60; % in hertz, basis frequencies. Can be optimized.
-
+% f_basis = logspace(log10(30),log10(250),100);
+% f_basis = f_basis'/60;
 % buffering
 win_dur = 3; % in sec
 n_win_size = round(win_dur * fs_sf);
@@ -60,16 +61,36 @@ for col = 1:size(t_mat,2)-1
         pause(0.05);
     end
     % pick the best alpha
-    alpha_score = sum(tempo_plane,2);
+%     alpha_score = rms(tempo_plane,2);
+    alpha_score = max(tempo_plane,[],2);
     [best_alpha, best_a_idx] = max(alpha_score);
     % collect the best overall ker
     best_overall_kernel_col = best_kernel_mat(best_a_idx, :)'; % slice out the best row, and transpose
     gamma_mat(:,col) = best_overall_kernel_col;
     
     S(col,:) = alpha_score;
-    P(col
-    Y(col,:) = squeeze(tempo_plane(find(not(alpha_vec)),:));
+%     figure(4);
+%     plot(alpha_score);
+%     drawnow;
+%     P(col
+%     Y(col,:) = squeeze(tempo_plane(find(not(alpha_vec)),:)); 
+    [Y(col,:), ~] = plp(n_sf_frame, fs_sf, f_basis);
     all_best_alpha(col) = best_alpha;
+
+%     Building Transition Matrix for each frame
+
+    for w = 1:size(tempo_plane,2)
+        wi_prob = tempo_plane(:,w);
+        k = 1.5;
+        wi_map = w*(1+alpha_vec*k)/60;
+        aij = interp1(wi_map,wi_prob,f_basis,'spline')'; 
+        aij = aij/max(aij);
+%         disp(max(aij));
+        transition(w,:) = aij;
+%         plot(aij); title('Wij'); drawnow;
+    end
+    imagesc(transition);
+    drawnow;
 end
 
 % unframe:
@@ -81,11 +102,11 @@ gamma_t = unframe(gamma_mat, n_hop_size);
 %%
 
 % viterbi
-
-% subplot(2,1,1), imagesc(log(Y')), colorbar; title('Y matrix')
+% % % 
+% subplot(2,1,1), imagesc(log(abs(Y)')), colorbar; title('Y matrix')
 % hold on;
 % plot(all_best_alpha,'.r');
-% subplot(2,1,2), imagesc(S'),colorbar; title('S matrix')
+% subplot(2,1,2), imagesc(log(S')),colorbar; title('S matrix')
 
 % Initial pi(alpha) is a uniform/random distribution to start with
 PI_alpha = ones(length(alpha_vec),1);
@@ -93,12 +114,12 @@ PI_alpha = ones(length(alpha_vec),1);
 trans = ones(length(alpha_vec)); 
 
 % Need to compute all state probabilities
-
-figure(1)
-plot(gamma_t);
-hold on;
-plot(n_t_sf);
-hold off;
+% 
+% figure(1)
+% plot(gamma_t);
+% hold on;
+% plot(n_t_sf);
+% hold off;
 
 
 
