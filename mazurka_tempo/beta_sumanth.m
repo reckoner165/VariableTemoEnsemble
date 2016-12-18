@@ -77,8 +77,11 @@ for col = 1:size(t_mat,2)-1
     [Y(col,:), ~] = plp(n_sf_frame, fs_sf, f_basis);
     all_best_alpha(col) = best_alpha;
 
-%     Building Transition Matrix for each frame
-
+% Building Viterbi Parameters
+% ---------------------------
+    
+% Building Transition Matrix for each frame
+% (Will replace this block by plugging function)
     for w = 1:size(tempo_plane,2)
         wi_prob = tempo_plane(:,w);
         k = 1.5;
@@ -91,8 +94,48 @@ for col = 1:size(t_mat,2)-1
     end
     imagesc(transition);
     drawnow;
+% P[y|S] is the plp for 0 alpha
+    [emission_prob, ~] = plp(n_sf_frame, fs_sf, f_basis);
+    emission_prob = abs(emission_prob)/max(abs(emission_prob));
+% Observation for each frame is the tempo plane for that frame
+    observation = tempo_plane;
+
+% Initial Probability is a uniform distribution
+    pi_w = ones(length(f_basis),1)/length(f_basis);
+    
+% VITERBI
+% -------
+
+if col == 1
+%    Initial step 
+   for j = 1:length(f_basis)
+       V(col,j) = log(emission_prob(j) + pi_w(j));
+   end
+else
+%     Get path and best i
+    for j = 1:length(f_basis)
+        for i = 1:length(f_basis)
+            v_candidates = V(col-1,i) + log(transition(i,j)) + log10(emission_prob(j));
+        end
+        [path(col-1,j), V(col,j)] = max(v_candidates);
+    end
+
+end
 end
 
+% POST VITERBI PATH PICKING
+
+% for t = 1:1:size(t_mat,2)-1
+%     [~,arg_V] = max(V(t,:));
+%     path_cap(t) = path(t,arg_V);
+% end
+
+
+% DEBUG PLOT
+imagesc(path');
+hold on;
+plot(1:1:size(t_mat,2)-1,path_cap, 'ro');
+hold off;
 % unframe:
 gamma_t = unframe(gamma_mat, n_hop_size);
 
@@ -101,19 +144,7 @@ gamma_t = unframe(gamma_mat, n_hop_size);
 
 %%
 
-% viterbi
-% % % 
-% subplot(2,1,1), imagesc(log(abs(Y)')), colorbar; title('Y matrix')
-% hold on;
-% plot(all_best_alpha,'.r');
-% subplot(2,1,2), imagesc(log(S')),colorbar; title('S matrix')
 
-% Initial pi(alpha) is a uniform/random distribution to start with
-PI_alpha = ones(length(alpha_vec),1);
-% Uniform transition matrix ***FOR NOW***
-trans = ones(length(alpha_vec)); 
-
-% Need to compute all state probabilities
 % 
 % figure(1)
 % plot(gamma_t);
