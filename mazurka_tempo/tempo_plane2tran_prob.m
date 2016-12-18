@@ -18,9 +18,5 @@ for w_idx = 1:width
     a_ij(w_idx,:) = aij_row;
 %         plot(aij); title('Wij'); drawnow;
 end
-
-imagesc(a_ij);
-drawnow;
-
 end
 

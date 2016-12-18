@@ -9,7 +9,7 @@ n_hop_size = round(n_win_size / hop_per_window);
 
 % main loop
 num_frame = size(t_mat,2)-1;
-tp_tensor = zeros(num_frame,length(alpha_vec),length(f_basis);
+tp_tensor = zeros(num_frame,length(alpha_vec),length(f_basis));
 for frame_n = 1:size(t_mat,2)-1
     
     tempo_plane = zeros(length(alpha_vec), length(f_basis));

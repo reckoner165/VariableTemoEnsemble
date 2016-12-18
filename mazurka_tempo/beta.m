@@ -18,65 +18,41 @@ plt = 1; % debugging option
 
 %% Short term analysis on n_t_sf
 % parameters:
-alpha_vec = -0.99:0.1:3;
-f_basis = (30:0.5:250)' / 60; % in hertz, basis frequencies. Can be optimized.
-
-% buffering
 win_dur = 3; % in sec
-n_win_size = round(win_dur * fs_sf);
-n_hop_size = round(n_win_size / 2);
-[windowed_n_mat, t_mat, frame_rate]  = frame(n_t_sf, t_sf ,fs_sf, n_win_size, n_hop_size);
+hop_per_window = 2; % hop_size = win_dur / hop_per_window;
+alpha_vec = (-0.5:0.05:1) ./ win_dur; % alpha: percentage per second.
+f_basis = (44:0.5:144)' / 60; % in hertz, basis frequencies. Can be optimized.
 
 
-% main loop
-gamma_mat = zeros(size(windowed_n_mat));
-for col = 1:size(t_mat,2)-1
-    
-    best_kernel_mat = zeros(length(alpha_vec), size(t_mat, 1));
-    tempo_plane = zeros(length(alpha_vec), length(f_basis));
-    
-    for i = 1:length(alpha_vec)
-        alpha = alpha_vec(i) / win_dur; % make sure negative tempo dont exist
-        t_sec = t_mat(:,col);
-        t_warped = warp(t_sec, fs_sf, alpha);
-        n_sf_frame = windowed_n_mat(:,col);
-        n_warped = interp1(t_sec, n_sf_frame, t_warped, 'spline');
-        [N_warped, best_kernel_warped] = plp(n_warped, fs_sf, f_basis);
-        tempo_plane(i,:) = abs(N_warped);
-        % unwarping the kernel
-        t_warped_0offset = t_warped - t_warped(1);
-        t_sec_0offset = t_sec - t_sec(1);
-        best_kernel_recovered = interp1(t_warped_0offset, best_kernel_warped, t_sec_0offset, 'spline');
-        best_kernel_mat(i, :) = best_kernel_recovered;
-       
-    end
-    
-    if plt == 1 % debug option
-        figure(2)
-        imagesc(tempo_plane);
-%         figure(3)
-%         imagesc(best_kernel_mat);
-        disp(col);
-        pause(0.05);
-    end
-    % pick the best alpha
-    alpha_score = sum(tempo_plane,2);
-    [best_alpha, best_a_idx] = max(alpha_score);
-    % collect the best overall ker
-    best_overall_kernel_col = best_kernel_mat(best_a_idx, :)'; % slice out the best row, and transpose
-    gamma_mat(:,col) = best_overall_kernel_col;
+tp_tensor= wplp_tp_tensor(n_t_sf, t_sf, fs_sf,win_dur, hop_per_window,alpha_vec, f_basis);
+[t_len,a_len,w_len] = size(tp_tensor);
+value_wt = zeros(w_len,t_len);
+path_wt = zeros(w_len,t_len);
+
+
+[~,a_0_idx] = min(abs(alpha_vec));
+t = 1;
+tp = squeeze(tp_tensor(t,:,:));
+emission_prob_yt_wj = abs(tp(a_0_idx,:))';
+
+value_wt(:,t) = log(emission_prob_yt_wj);
+
+for t = 2:t_len % each frame
+    tp = squeeze(tp_tensor(t,:,:)); 
+    emission_prob_yt_wj = abs(tp(a_0_idx,:))'; % take the plp with alpha close to 0 for emission probability
+    a_ij = tempo_plane2tran_prob( tp, alpha_vec, f_basis, win_dur, hop_per_window,0.3);
+    value_t1_i = repmat(value_wt(:,t-1),1,w_len);
+    [value_wt_row, i_hat_row] = max(value_t1_i+log(a_ij), [], 1);
+    value_wt_col = value_wt_row' + log(emission_prob_yt_wj);
+    value_wt(:,t) = value_wt_col;
+    path_wt(:,t-1) = i_hat_row';
 end
-
-% unframe:
-gamma_t = unframe(gamma_mat, n_hop_size);
-
-%%
-figure(1)
-plot(gamma_t);
-hold on;
-plot(n_t_sf);
-hold off;
-
+%% Plotting
+path_wt(:,t_len) = 1:w_len;
+[best_value,best_value_idx] = max(value_wt(:,t_len));
+best_path = path_wt(best_value_idx,:);
+best_w_vec = f_basis(best_path) * 60;
+plot(best_w_vec,'k');
 
 
 
