@@ -51,14 +51,17 @@ for col = 1:size(t_mat,2)-1
         best_kernel_mat(i, :) = best_kernel_recovered;
        
     end
-    plt = 0;
+    plt = 1;
     if plt == 1 % debug option
         figure(2)
-        imagesc(tempo_plane);
+        imagesc(alpha_vec, f_basis, tempo_plane);
+        xlabel('Warping Parameter');
+        ylabel('Tempo');
+        title('Tempo Plane');
 %         figure(3)
 %         imagesc(best_kernel_mat);
         disp(col);
-        pause(0.05);
+        pause;
     end
     % pick the best alpha
 %     alpha_score = rms(tempo_plane,2);
