@@ -96,7 +96,7 @@ for col = 1:size(t_mat,2)-1
     drawnow;
 % P[y|S] is the plp for 0 alpha
     [emission_prob, ~] = plp(n_sf_frame, fs_sf, f_basis);
-    
+    emission_prob = abs(emission_prob)/max(abs(emission_prob));
 % Observation for each frame is the tempo plane for that frame
     observation = tempo_plane;
 
@@ -108,13 +108,34 @@ for col = 1:size(t_mat,2)-1
 
 if col == 1
 %    Initial step 
-
+   for j = 1:length(f_basis)
+       V(col,j) = log(emission_prob(j) + pi_w(j));
+   end
 else
 %     Get path and best i
+    for j = 1:length(f_basis)
+        for i = 1:length(f_basis)
+            v_candidates = V(col-1,i) + log(transition(i,j)) + log10(emission_prob(j));
+        end
+        [path(col-1,j), V(col,j)] = max(v_candidates);
+    end
+
 end
-    
 end
 
+% POST VITERBI PATH PICKING
+
+% for t = 1:1:size(t_mat,2)-1
+%     [~,arg_V] = max(V(t,:));
+%     path_cap(t) = path(t,arg_V);
+% end
+
+
+% DEBUG PLOT
+imagesc(path');
+hold on;
+plot(1:1:size(t_mat,2)-1,path_cap, 'ro');
+hold off;
 % unframe:
 gamma_t = unframe(gamma_mat, n_hop_size);
 
