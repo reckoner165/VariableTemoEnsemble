@@ -14,9 +14,7 @@ for w_idx = 1:width
     wj = f_basis(w_idx) * (1 + alpha_vec * t*alpha_adj);
     aij_row = interp1(wj,wj_prob,f_basis,'spline')'; 
     aij_row = aij_row/max(aij_row);
-%         disp(max(aij));
     a_ij(w_idx,:) = aij_row;
-%         plot(aij); title('Wij'); drawnow;
 end
 end
 

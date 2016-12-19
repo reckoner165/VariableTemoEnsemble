@@ -19,7 +19,7 @@ plt = 1; % debugging option
 %% Short term analysis on n_t_sf
 % parameters:
 alpha_vec = -0.99:0.1:3;
-f_basis = (30:0.5:250)' / 60; % in hertz, basis frequencies. Can be optimized.
+f_basis = (44:0.5:144)' / 60; % in hertz, basis frequencies. Can be optimized.
 % f_basis = logspace(log10(30),log10(250),100);
 % f_basis = f_basis'/60;
 % buffering
@@ -54,9 +54,10 @@ for col = 1:size(t_mat,2)-1
     plt = 1;
     if plt == 1 % debug option
         figure(2)
-        imagesc(alpha_vec, f_basis, tempo_plane);
-        xlabel('Warping Parameter');
-        ylabel('Tempo');
+        imagesc(f_basis*60, alpha_vec, tempo_plane);
+        xlabel('Tempo');
+        ylabel('Warping Parameter');
+ 
         title('Tempo Plane');
 %         figure(3)
 %         imagesc(best_kernel_mat);
